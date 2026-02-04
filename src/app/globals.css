@@ -1,0 +1,280 @@
+@import "tailwindcss";
+
+/* ============================================
+   SIGNALLEAGUE — CYBERPUNK DESIGN SYSTEM
+   ============================================ */
+
+@theme {
+  /* ---- Colors ---- */
+  --color-background: #0a0a0f;
+  --color-foreground: #e0e0e8;
+  --color-card: #0d0d14;
+  --color-card-foreground: #e0e0e8;
+  --color-popover: #0d0d14;
+  --color-popover-foreground: #e0e0e8;
+  --color-primary: #00ff88;
+  --color-primary-foreground: #0a0a0f;
+  --color-secondary: #ff00ff;
+  --color-secondary-foreground: #0a0a0f;
+  --color-tertiary: #00d4ff;
+  --color-tertiary-foreground: #0a0a0f;
+  --color-muted: #1a1a2e;
+  --color-muted-foreground: #6b6b80;
+  --color-accent: #1a1a2e;
+  --color-accent-foreground: #00ff88;
+  --color-destructive: #ff3366;
+  --color-destructive-foreground: #0a0a0f;
+  --color-border: #1e1e32;
+  --color-input: #1a1a2e;
+  --color-ring: #00ff88;
+
+  /* Tier Colors */
+  --color-tier-s: #ffd700;
+  --color-tier-a: #00ff88;
+  --color-tier-b: #00d4ff;
+  --color-tier-c: #ffaa00;
+  --color-tier-d: #ff6b35;
+  --color-tier-f: #ff3366;
+  --color-tier-unranked: #6b6b80;
+
+  /* Surface Layers */
+  --color-surface-0: #0a0a0f;
+  --color-surface-1: #0d0d14;
+  --color-surface-2: #12121f;
+  --color-surface-3: #1a1a2e;
+  --color-surface-4: #24243e;
+
+  /* ---- Fonts ---- */
+  --font-heading: "Orbitron", monospace;
+  --font-body: "JetBrains Mono", "Fira Code", monospace;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* ---- Animations ---- */
+  --animate-glitch: glitch 3s infinite;
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
+  --animate-blink: blink 1s steps(2) infinite;
+  --animate-flicker: flicker 0.15s infinite;
+  --animate-rgb-shift: rgb-shift 4s ease-in-out infinite;
+}
+
+/* ---- Google Fonts ---- */
+@font-face {
+  font-family: "Orbitron";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap");
+}
+
+/* ---- Base Styles ---- */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-primary) 30%, transparent);
+    color: var(--color-primary);
+  }
+
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-surface-0);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-surface-3);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+  }
+}
+
+/* ---- Keyframes ---- */
+@keyframes glitch {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes flicker {
+  0% { opacity: 0.97; }
+  5% { opacity: 0.9; }
+  10% { opacity: 0.97; }
+  15% { opacity: 0.93; }
+  20% { opacity: 0.97; }
+  100% { opacity: 0.97; }
+}
+
+@keyframes rgb-shift {
+  0%, 100% {
+    text-shadow: -1px 0 #ff00ff, 1px 0 #00d4ff;
+  }
+  25% {
+    text-shadow: -2px 0 #ff00ff, 2px 0 #00d4ff;
+  }
+  50% {
+    text-shadow: -1px 0 #00d4ff, 1px 0 #ff00ff;
+  }
+  75% {
+    text-shadow: -2px 0 #00d4ff, 2px 0 #ff00ff;
+  }
+}
+
+/* ---- Utility Classes ---- */
+@layer utilities {
+  /* Chamfered Corners (no border-radius!) */
+  .chamfer-sm {
+    clip-path: polygon(
+      8px 0%, calc(100% - 8px) 0%,
+      100% 8px, 100% calc(100% - 8px),
+      calc(100% - 8px) 100%, 8px 100%,
+      0% calc(100% - 8px), 0% 8px
+    );
+  }
+
+  .chamfer-md {
+    clip-path: polygon(
+      12px 0%, calc(100% - 12px) 0%,
+      100% 12px, 100% calc(100% - 12px),
+      calc(100% - 12px) 100%, 12px 100%,
+      0% calc(100% - 12px), 0% 12px
+    );
+  }
+
+  .chamfer-lg {
+    clip-path: polygon(
+      16px 0%, calc(100% - 16px) 0%,
+      100% 16px, 100% calc(100% - 16px),
+      calc(100% - 16px) 100%, 16px 100%,
+      0% calc(100% - 16px), 0% 16px
+    );
+  }
+
+  /* Neon Glow */
+  .glow-primary {
+    box-shadow:
+      0 0 5px color-mix(in srgb, var(--color-primary) 50%, transparent),
+      0 0 20px color-mix(in srgb, var(--color-primary) 20%, transparent);
+  }
+
+  .glow-secondary {
+    box-shadow:
+      0 0 5px color-mix(in srgb, var(--color-secondary) 50%, transparent),
+      0 0 20px color-mix(in srgb, var(--color-secondary) 20%, transparent);
+  }
+
+  .glow-tertiary {
+    box-shadow:
+      0 0 5px color-mix(in srgb, var(--color-tertiary) 50%, transparent),
+      0 0 20px color-mix(in srgb, var(--color-tertiary) 20%, transparent);
+  }
+
+  .glow-destructive {
+    box-shadow:
+      0 0 5px color-mix(in srgb, var(--color-destructive) 50%, transparent),
+      0 0 20px color-mix(in srgb, var(--color-destructive) 20%, transparent);
+  }
+
+  /* Text Glow */
+  .text-glow-primary {
+    text-shadow:
+      0 0 7px color-mix(in srgb, var(--color-primary) 60%, transparent),
+      0 0 20px color-mix(in srgb, var(--color-primary) 30%, transparent);
+  }
+
+  .text-glow-secondary {
+    text-shadow:
+      0 0 7px color-mix(in srgb, var(--color-secondary) 60%, transparent),
+      0 0 20px color-mix(in srgb, var(--color-secondary) 30%, transparent);
+  }
+
+  /* Scanline Overlay */
+  .scanlines::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 2px,
+      rgba(0, 0, 0, 0.1) 4px
+    );
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  /* Chromatic Aberration Text */
+  .chromatic {
+    text-shadow:
+      -1px 0 var(--color-secondary),
+      1px 0 var(--color-tertiary);
+  }
+
+  /* Circuit Grid Background */
+  .circuit-bg {
+    background-image:
+      linear-gradient(
+        var(--color-border) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        var(--color-border) 1px,
+        transparent 1px
+      );
+    background-size: 40px 40px;
+  }
+
+  /* Terminal Cursor */
+  .cursor-blink::after {
+    content: "█";
+    animation: blink 1s steps(2) infinite;
+    color: var(--color-primary);
+  }
+
+  /* Border Glow */
+  .border-glow-primary {
+    border: 1px solid var(--color-primary);
+    box-shadow:
+      0 0 5px color-mix(in srgb, var(--color-primary) 30%, transparent),
+      inset 0 0 5px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  }
+}
