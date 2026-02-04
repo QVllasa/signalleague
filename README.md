@@ -171,4 +171,101 @@ Wird noch festgelegt. Mögliche Optionen:
 
 ---
 
+## Verfügbare Domains (RDAP-verifiziert am 04.02.2026)
+
+Alle unten gelisteten Domains wurden per Verisign RDAP API als **nicht registriert** bestätigt.
+
+### Gewählter Name
+- **signalleague.com** — Gewählt als Projektname
+
+### Weitere verfügbare .com Alternativen
+
+| Domain | Kategorie |
+|---|---|
+| ratemysignals.com | "Rate My..." Format |
+| rankmysignals.com | "Rank My..." Format |
+| ratemygroup.com | "Rate My..." Format |
+| rankmygroup.com | "Rank My..." Format |
+| ratethesignal.com | "Rate The..." Format |
+| rankthesignal.com | "Rank The..." Format |
+| ratethealpha.com | "Rate The..." Format |
+| rankthealpha.com | "Rank The..." Format |
+| rankthegroup.com | "Rank The..." Format |
+| callranker.com | Kurz & knackig |
+| groupranker.com | Beschreibend |
+| setupranker.com | Setup-fokussiert |
+| signalcritic.com | Metacritic-Stil |
+| setupcritic.com | Metacritic-Stil |
+| signaltier.com | Tier-List Konzept |
+| signalranked.com | Ranking-Stil |
+| groupranked.com | Ranking-Stil |
+| traderanked.com | Ranking-Stil |
+| callranked.com | Ranking-Stil |
+| signalscored.com | Score-Stil |
+| groupscored.com | Score-Stil |
+| tradescored.com | Score-Stil |
+| setupvote.com | Voting-Stil |
+| setupscore.com | Score-Stil |
+| groupranking.com | Beschreibend |
+| groupranks.com | Beschreibend |
+| callranks.com | Beschreibend |
+| grouporacle.com | Kreativ |
+
+### Verfügbare .app Domains
+
+| Domain | Kategorie |
+|---|---|
+| signalhub.app | Hub-Konzept |
+| tradehub.app | Hub-Konzept |
+| grouphub.app | Hub-Konzept |
+| callhub.app | Hub-Konzept |
+| signaledge.app | Edge/Vorteil |
+| tradeedge.app | Edge/Vorteil |
+| groupedge.app | Edge/Vorteil |
+| signalboard.app | Board/Dashboard |
+| callboard.app | Board/Dashboard |
+| setupboard.app | Board/Dashboard |
+| signalcritic.app | Metacritic-Stil |
+| tradecritic.app | Metacritic-Stil |
+| groupcritic.app | Metacritic-Stil |
+| rankwise.app | Modern |
+| rankit.app | Modern |
+| alphapicks.app | Catchy |
+| signalreviews.app | Beschreibend |
+| groupreviews.app | Beschreibend |
+| signalwise.app | Modern |
+| tradewise.app | Modern |
+| groupwise.app | Modern |
+| tradestack.app | Stack-Konzept |
+| signalcheck.app | Check/Verify |
+| tradereview.app | Beschreibend |
+
+> **Hinweis:** Domain-Verfügbarkeit kann sich jederzeit ändern. Vor dem Kauf nochmal prüfen!
+
+---
+
+## Entscheidungslog
+
+| Datum | Entscheidung | Begründung |
+|---|---|---|
+| 04.02.2026 | Name: **SignalLeague** | Community/Wettbewerb-Feeling, "League" impliziert Ranking, Domain .com verfügbar |
+| 04.02.2026 | Repo-Name: `signalleague` (ohne Bindestrich) | Einheitlich mit Domain signalleague.com |
+| 04.02.2026 | Design: Cyberpunk/Glitch | Hebt sich visuell stark von allen Wettbewerbern ab, passt zum "Underground"-Trading-Vibe |
+| 04.02.2026 | Positionierung: "Trustpilot für Trading-Signale" | Klare Kommunikation, bekanntes Konzept, unabhängig von Marktplätzen |
+
+---
+
+## Nächste Schritte (TODO)
+
+- [ ] **Domain registrieren**: signalleague.com kaufen (z.B. via Namecheap/Cloudflare)
+- [ ] **Tech Stack finalisieren**: Frontend (Next.js), Backend (FastAPI vs Node.js), DB (PostgreSQL)
+- [ ] **Projektstruktur aufsetzen**: Monorepo oder separate Repos für Frontend/Backend
+- [ ] **Landing Page bauen**: Cyberpunk Design System umsetzen, "Coming Soon" mit E-Mail-Signup
+- [ ] **Datenmodell entwerfen**: Gruppen, Reviews, User, Ratings, Plattformen
+- [ ] **Twitter/X OAuth Integration**: Research zur X API für Profil-Verlinkung
+- [ ] **MVP Feature-Set priorisieren**: Was kommt in v1.0?
+- [ ] **Branding**: Logo, Favicon, Social Media Assets im Cyberpunk-Stil
+
+---
+
 *Zuletzt aktualisiert: 4. Februar 2026*
