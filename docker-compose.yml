@@ -109,7 +109,7 @@ services:
   # Plausible Analytics
   plausible:
     container_name: signalleague-plausible
-    image: ghcr.io/plausible/community-edition:v2-latest
+    image: ghcr.io/plausible/community-edition:v2.1
     ports:
       - "8000:8000"
     environment:
