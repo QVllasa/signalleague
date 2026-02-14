@@ -14,11 +14,12 @@ async function seed() {
   console.log("🌱 Seeding database...");
 
   // ─── Admin User ───────────────────────────────────────────────
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@signalleague.com";
   const [adminUser] = await db
     .insert(users)
     .values({
       name: "SignalLeague Admin",
-      email: "admin@signalleague.com",
+      email: adminEmail,
       role: "admin",
       reputationScore: 100,
     })

@@ -8,22 +8,34 @@ const publicRoutes = ["/", "/groups", "/leaderboard", "/login", "/api/auth"];
 export default auth((req) => {
   const { pathname } = req.nextUrl;
 
-  // Allow public routes
+  // These sub-paths under /groups require auth even though /groups is public
+  const needsAuth =
+    pathname === "/groups/submit" || pathname.endsWith("/review");
+
+  // Allow public routes (but exclude auth-required sub-paths)
   const isPublicRoute = publicRoutes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
-  if (isPublicRoute) {
+
+  if (isPublicRoute && !needsAuth) {
     return NextResponse.next();
   }
 
-  // Protect /dashboard and /admin routes - redirect to login if not authenticated
+  // Protect /dashboard, /admin, and auth-required routes
   const isProtectedRoute =
-    pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/admin") ||
+    needsAuth;
 
   if (isProtectedRoute && !req.auth) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Admin role check — authenticated non-admins get redirected home
+  if (pathname.startsWith("/admin") && req.auth?.user?.role !== "admin") {
+    return NextResponse.redirect(new URL("/", req.nextUrl.origin));
   }
 
   return NextResponse.next();

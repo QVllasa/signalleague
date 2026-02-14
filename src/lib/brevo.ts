@@ -19,22 +19,36 @@ export async function sendEmail({
     return null;
   }
 
-  const response = await fetch(`${BREVO_API_URL}/smtp/email`, {
-    method: "POST",
-    headers: {
-      "api-key": BREVO_API_KEY,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ sender, to, subject, htmlContent }),
-  });
+  const doSend = async () => {
+    const response = await fetch(`${BREVO_API_URL}/smtp/email`, {
+      method: "POST",
+      headers: {
+        "api-key": BREVO_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ sender, to, subject, htmlContent }),
+    });
 
-  if (!response.ok) {
-    const error = await response.text();
-    console.error("[Brevo] Failed to send email:", error);
-    throw new Error(`Failed to send email: ${response.status}`);
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to send email: ${response.status} - ${error}`);
+    }
+
+    return response.json();
+  };
+
+  try {
+    return await doSend();
+  } catch (err) {
+    console.warn("[Brevo] First attempt failed, retrying in 2s...", (err as Error).message);
+    await new Promise((r) => setTimeout(r, 2000));
+    try {
+      return await doSend();
+    } catch (retryErr) {
+      console.error("[Brevo] Retry failed:", (retryErr as Error).message);
+      return null;
+    }
   }
-
-  return response.json();
 }
 
 export async function addContactToList(email: string, listId: number) {

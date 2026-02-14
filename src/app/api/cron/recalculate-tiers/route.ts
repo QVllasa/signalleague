@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { recalculateAllTiers } from "@/lib/ranking";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const { success } = await rateLimit("cron:recalculate", 10, 60);
+  if (!success) {
+    return Response.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   // Verify cron secret
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {

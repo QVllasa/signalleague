@@ -19,7 +19,7 @@ export type MembershipDuration =
   | "1_to_3_months"
   | "3_to_6_months"
   | "6_to_12_months"
-  | "more_than_1_year";
+  | "over_1_year";
 
 export type Tier = "S" | "A" | "B" | "C" | "D" | "F" | "UNRANKED";
 

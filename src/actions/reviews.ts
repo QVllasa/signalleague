@@ -143,46 +143,51 @@ export async function voteOnReview(reviewId: string, voteType: "helpful" | "unhe
     return { error: "You must be signed in to vote" };
   }
 
-  // Check existing vote
-  const existing = await db
-    .select()
-    .from(reviewVotes)
-    .where(
-      and(
-        eq(reviewVotes.userId, session.user.id),
-        eq(reviewVotes.reviewId, reviewId)
+  try {
+    // Check existing vote
+    const existing = await db
+      .select()
+      .from(reviewVotes)
+      .where(
+        and(
+          eq(reviewVotes.userId, session.user.id),
+          eq(reviewVotes.reviewId, reviewId)
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
 
-  if (existing.length > 0) {
-    // Update existing vote
+    if (existing.length > 0) {
+      // Update existing vote
+      await db
+        .update(reviewVotes)
+        .set({ voteType })
+        .where(eq(reviewVotes.id, existing[0].id));
+    } else {
+      // Insert new vote
+      await db.insert(reviewVotes).values({
+        userId: session.user.id,
+        reviewId,
+        voteType,
+      });
+    }
+
+    // Update helpful count on review
     await db
-      .update(reviewVotes)
-      .set({ voteType })
-      .where(eq(reviewVotes.id, existing[0].id));
-  } else {
-    // Insert new vote
-    await db.insert(reviewVotes).values({
-      userId: session.user.id,
-      reviewId,
-      voteType,
-    });
+      .update(reviews)
+      .set({
+        helpfulCount: sql`(
+          SELECT COUNT(*)::int
+          FROM review_votes
+          WHERE review_id = ${reviewId} AND vote_type = 'helpful'
+        )`,
+      })
+      .where(eq(reviews.id, reviewId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("[Reviews] Vote error:", error);
+    return { error: "Failed to submit vote" };
   }
-
-  // Update helpful count on review
-  await db
-    .update(reviews)
-    .set({
-      helpfulCount: sql`(
-        SELECT COUNT(*)::int
-        FROM review_votes
-        WHERE review_id = ${reviewId} AND vote_type = 'helpful'
-      )`,
-    })
-    .where(eq(reviews.id, reviewId));
-
-  return { success: true };
 }
 
 export async function reportContent(

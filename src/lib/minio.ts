@@ -44,7 +44,8 @@ export async function deleteFile(key: string) {
 }
 
 export function getPublicUrl(key: string) {
-  return `http://${process.env.MINIO_ENDPOINT || "localhost"}:${process.env.MINIO_PORT || "9000"}/${BUCKET}/${key}`;
+  const baseUrl = process.env.NEXT_PUBLIC_MINIO_URL || `http://${process.env.MINIO_ENDPOINT || "localhost"}:${process.env.MINIO_PORT || "9000"}`;
+  return `${baseUrl}/${BUCKET}/${key}`;
 }
 
 export async function getFile(key: string) {
