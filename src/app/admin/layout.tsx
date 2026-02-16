@@ -9,6 +9,8 @@ const adminNav = [
   { href: "/admin/reports", label: "Reports" },
   { href: "/admin/waitlist", label: "Waitlist" },
   { href: "/admin/users", label: "Users" },
+  { href: "/admin/bot", label: "Bot" },
+  { href: "/admin/bot/config", label: "Bot Config" },
 ];
 
 export default async function AdminLayout({

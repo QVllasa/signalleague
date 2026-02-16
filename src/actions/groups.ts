@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { db } from "@/db";
 import { signalGroups } from "@/db/schema";
-import { eq, desc, and, sql, ilike } from "drizzle-orm";
+import { eq, desc, and, or, sql, ilike } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -67,6 +67,22 @@ export async function submitGroup(formData: FormData) {
   }
 
   try {
+    // Fuzzy dedup check: look for existing groups with similar name or handle
+    const potentialDuplicates = await db
+      .select({
+        id: signalGroups.id,
+        name: signalGroups.name,
+        platformHandle: signalGroups.platformHandle,
+        status: signalGroups.status,
+      })
+      .from(signalGroups)
+      .where(
+        or(
+          ilike(signalGroups.name, `%${data.name}%`),
+          ilike(signalGroups.platformHandle, `%${data.platformHandle}%`)
+        )
+      );
+
     const [group] = await db
       .insert(signalGroups)
       .values({
@@ -86,7 +102,12 @@ export async function submitGroup(formData: FormData) {
       .returning();
 
     revalidatePath("/groups");
-    return { success: true, slug: group.slug };
+    revalidatePath("/admin/groups");
+    return {
+      success: true,
+      slug: group.slug,
+      potentialDuplicates: potentialDuplicates.length,
+    };
   } catch (error) {
     console.error("[Groups] Submit error:", error);
     return { error: "Failed to submit group. Please try again." };

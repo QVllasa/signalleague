@@ -48,3 +48,5 @@ docker/data/
 
 # drizzle
 drizzle/meta/
+bot/node_modules/
+bot/package-lock.json

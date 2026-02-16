@@ -11,8 +11,12 @@ import { RadarChart } from "@/components/groups/radar-chart";
 import { Button } from "@/components/ui/button";
 import { PLATFORM_CONFIG, REVIEW_CATEGORIES } from "@/types";
 import { db } from "@/db";
-import { signalGroups, reviews, tierRankings, users } from "@/db/schema";
+import { signalGroups, reviews, tierRankings, users, scamFlags, twitterMentions } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { ScamWarning } from "@/components/custom/scam-warning";
+import { SocialProof } from "@/components/custom/social-proof";
+import { TrackRecord } from "@/components/custom/track-record";
+import { getTradeStats } from "@/actions/trade-ratings";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -57,7 +61,46 @@ async function getGroup(slug: string) {
     .orderBy(desc(reviews.createdAt))
     .limit(20);
 
-  return { group, ranking: ranking || null, reviews: groupReviews };
+  // Fetch scam flags for this group
+  const groupScamFlags = await db
+    .select({
+      flag: scamFlags.flag,
+      description: scamFlags.description,
+      severity: scamFlags.severity,
+    })
+    .from(scamFlags)
+    .where(eq(scamFlags.groupId, group.id));
+
+  // Fetch recent twitter mentions (last 5)
+  const recentMentions = await db
+    .select({
+      id: twitterMentions.id,
+      authorHandle: twitterMentions.authorHandle,
+      content: twitterMentions.content,
+      sentiment: twitterMentions.sentiment,
+      engagement: twitterMentions.engagement,
+      tweetedAt: twitterMentions.tweetedAt,
+    })
+    .from(twitterMentions)
+    .where(eq(twitterMentions.groupId, group.id))
+    .orderBy(desc(twitterMentions.tweetedAt))
+    .limit(5);
+
+  // Fetch trade stats
+  const tradeStats = await getTradeStats(group.id);
+
+  return {
+    group,
+    ranking: ranking || null,
+    reviews: groupReviews,
+    scamFlags: groupScamFlags.map((f) => ({
+      flag: f.flag,
+      description: f.description ?? "",
+      severity: f.severity,
+    })),
+    mentions: recentMentions,
+    tradeStats,
+  };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -76,10 +119,13 @@ export default async function GroupProfilePage({ params }: PageProps) {
   const data = await getGroup(slug);
   if (!data) notFound();
 
-  const { group, ranking, reviews: groupReviews } = data;
+  const { group, ranking, reviews: groupReviews, scamFlags: flags, mentions, tradeStats } = data;
   const platformInfo = PLATFORM_CONFIG[group.platform];
   const tier = ranking?.tier ?? "UNRANKED";
   const avgScore = group.avgScore ? parseFloat(group.avgScore) : 0;
+  const transparencyScore = group.transparencyScore ?? null;
+  const mentionCount7d = group.twitterMentionCount7d ?? 0;
+  const sentimentScore = group.sentimentScore ? parseFloat(group.sentimentScore) : null;
 
   // Compute average category scores
   const categoryAvgs = {
@@ -201,6 +247,9 @@ export default async function GroupProfilePage({ params }: PageProps) {
                 </div>
               )}
 
+              {/* Track Record */}
+              <TrackRecord stats={tradeStats} />
+
               {/* Reviews */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -304,6 +353,47 @@ export default async function GroupProfilePage({ params }: PageProps) {
 
             {/* Sidebar */}
             <div className="space-y-6">
+              {/* Scam Warning */}
+              {flags.length > 0 && <ScamWarning flags={flags} />}
+
+              {/* Transparency Score */}
+              {transparencyScore !== null && (
+                <div className="bg-surface-1 border border-border p-5 space-y-3">
+                  <h2 className="font-heading text-xs tracking-wider text-foreground">
+                    Transparency Score
+                  </h2>
+                  <div className="flex items-baseline gap-2">
+                    <span
+                      className={`text-3xl font-heading ${
+                        transparencyScore >= 70
+                          ? "text-primary"
+                          : transparencyScore >= 40
+                            ? "text-tier-c"
+                            : "text-destructive"
+                      }`}
+                    >
+                      {transparencyScore}
+                    </span>
+                    <span className="text-sm text-muted-foreground">/100</span>
+                  </div>
+                  <div className="h-2 w-full bg-surface-3 overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-300 ${
+                        transparencyScore >= 70
+                          ? "bg-primary"
+                          : transparencyScore >= 40
+                            ? "bg-tier-c"
+                            : "bg-destructive"
+                      }`}
+                      style={{ width: `${transparencyScore}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    Transparency Score
+                  </p>
+                </div>
+              )}
+
               {/* Details */}
               <div className="bg-surface-1 border border-border p-5 space-y-4">
                 <h2 className="font-heading text-xs tracking-wider text-foreground">
@@ -358,6 +448,20 @@ export default async function GroupProfilePage({ params }: PageProps) {
                   </a>
                 )}
               </div>
+
+              {/* Social Proof / Community Buzz */}
+              <SocialProof
+                mentionCount7d={mentionCount7d}
+                sentimentScore={sentimentScore}
+                mentions={mentions.map((m) => ({
+                  id: m.id,
+                  authorHandle: m.authorHandle,
+                  content: m.content,
+                  sentiment: m.sentiment,
+                  engagement: m.engagement,
+                  tweetedAt: m.tweetedAt,
+                }))}
+              />
 
               {/* Write Review CTA */}
               <div className="bg-surface-2 border border-primary/20 p-5 space-y-3 text-center">
