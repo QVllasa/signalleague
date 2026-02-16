@@ -4,7 +4,7 @@
 
 export type UserRole = "user" | "moderator" | "admin";
 
-export type Platform = "twitter" | "discord" | "telegram";
+export type Platform = "twitter" | "discord" | "telegram" | "whop";
 
 export type AssetClass = "crypto" | "forex" | "stocks" | "options";
 
@@ -84,4 +84,5 @@ export const PLATFORM_CONFIG: Record<
   twitter: { label: "Twitter/X", icon: "twitter", color: "#1DA1F2" },
   discord: { label: "Discord", icon: "message-circle", color: "#5865F2" },
   telegram: { label: "Telegram", icon: "send", color: "#0088cc" },
+  whop: { label: "Whop", icon: "shopping-bag", color: "#7C3AED" },
 };

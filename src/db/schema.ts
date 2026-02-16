@@ -22,6 +22,7 @@ export const platformEnum = pgEnum("platform", [
   "twitter",
   "discord",
   "telegram",
+  "whop",
 ]);
 
 export const assetClassEnum = pgEnum("asset_class", [
@@ -94,6 +95,49 @@ export const reportStatusEnum = pgEnum("report_status", [
   "reviewed",
   "resolved",
   "dismissed",
+]);
+
+export const scamRiskEnum = pgEnum("scam_risk", [
+  "low",
+  "medium",
+  "high",
+  "critical",
+]);
+
+export const botPostStatusEnum = pgEnum("bot_post_status", [
+  "queued",
+  "posted",
+  "failed",
+  "skipped",
+]);
+
+export const botPostTypeEnum = pgEnum("bot_post_type", [
+  "pnl_commentary",
+  "group_review",
+  "scam_alert",
+  "general_ct",
+  "group_discovery",
+]);
+
+export const mentionSentimentEnum = pgEnum("mention_sentiment", [
+  "positive",
+  "negative",
+  "neutral",
+]);
+
+export const tradeOutcomeEnum = pgEnum("trade_outcome", [
+  "win",
+  "loss",
+  "breakeven",
+  "unknown",
+]);
+
+export const enrichmentSourceEnum = pgEnum("enrichment_source", [
+  "twitter",
+  "discord",
+  "telegram",
+  "whop",
+  "website",
 ]);
 
 // ─── Tables ─────────────────────────────────────────────────────────────────────
@@ -187,6 +231,12 @@ export const signalGroups = pgTable("signal_groups", {
   status: groupStatusEnum("status").default("pending").notNull(),
   avgScore: numeric("avg_score", { precision: 3, scale: 1 }),
   reviewCount: integer("review_count").default(0).notNull(),
+  transparencyScore: integer("transparency_score"),
+  scamRisk: scamRiskEnum("scam_risk"),
+  twitterMentionCount7d: integer("twitter_mention_count_7d").default(0).notNull(),
+  sentimentScore: numeric("sentiment_score", { precision: 5, scale: 2 }),
+  winRate: numeric("win_rate", { precision: 5, scale: 2 }),
+  totalTradeRatings: integer("total_trade_ratings").default(0).notNull(),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
@@ -354,6 +404,91 @@ export const bookmarks = pgTable(
   ]
 );
 
+// 15. scamFlags
+export const scamFlags = pgTable("scam_flags", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  groupId: uuid("group_id").references(() => signalGroups.id, {
+    onDelete: "cascade",
+  }),
+  flag: varchar("flag", { length: 255 }).notNull(),
+  description: text("description"),
+  severity: scamRiskEnum("severity").default("medium").notNull(),
+  autoDetected: integer("auto_detected").default(1).notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+// 16. twitterMentions
+export const twitterMentions = pgTable("twitter_mentions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  groupId: uuid("group_id").references(() => signalGroups.id, {
+    onDelete: "set null",
+  }),
+  tweetId: varchar("tweet_id", { length: 64 }).notNull().unique(),
+  authorHandle: varchar("author_handle", { length: 255 }).notNull(),
+  authorFollowers: integer("author_followers"),
+  content: text("content").notNull(),
+  sentiment: mentionSentimentEnum("sentiment").default("neutral").notNull(),
+  engagement: integer("engagement").default(0).notNull(),
+  tweetedAt: timestamp("tweeted_at", { mode: "date" }).notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+// 17. tradeRatings
+export const tradeRatings = pgTable("trade_ratings", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => signalGroups.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  outcome: tradeOutcomeEnum("outcome").notNull(),
+  returnPct: numeric("return_pct", { precision: 8, scale: 2 }),
+  description: varchar("description", { length: 500 }),
+  tradeDate: date("trade_date"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+// 18. groupEnrichment
+export const groupEnrichment = pgTable("group_enrichment", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => signalGroups.id, { onDelete: "cascade" }),
+  source: enrichmentSourceEnum("source").notNull(),
+  data: text("data").notNull(),
+  collectedAt: timestamp("collected_at", { mode: "date" })
+    .defaultNow()
+    .notNull(),
+});
+
+// 19. botQueue
+export const botQueue = pgTable("bot_queue", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  postType: botPostTypeEnum("post_type").notNull(),
+  content: text("content").notNull(),
+  replyToTweetId: varchar("reply_to_tweet_id", { length: 64 }),
+  quoteTweetId: varchar("quote_tweet_id", { length: 64 }),
+  relatedGroupId: uuid("related_group_id").references(() => signalGroups.id, {
+    onDelete: "set null",
+  }),
+  triggerTweetId: varchar("trigger_tweet_id", { length: 64 }),
+  status: botPostStatusEnum("status").default("queued").notNull(),
+  scheduledFor: timestamp("scheduled_for", { mode: "date" }),
+  postedAt: timestamp("posted_at", { mode: "date" }),
+  postedTweetId: varchar("posted_tweet_id", { length: 64 }),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+// 20. botConfig
+export const botConfig = pgTable("bot_config", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
+
 // ─── Relations ──────────────────────────────────────────────────────────────────
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -364,6 +499,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   reports: many(reports),
   bookmarks: many(bookmarks),
   submittedGroups: many(signalGroups),
+  tradeRatings: many(tradeRatings),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -395,6 +531,10 @@ export const signalGroupsRelations = relations(
     tierHistory: many(tierHistory),
     groupTags: many(groupTags),
     bookmarks: many(bookmarks),
+    scamFlags: many(scamFlags),
+    twitterMentions: many(twitterMentions),
+    tradeRatings: many(tradeRatings),
+    enrichment: many(groupEnrichment),
   })
 );
 
@@ -467,3 +607,41 @@ export const bookmarksRelations = relations(bookmarks, ({ one }) => ({
     references: [signalGroups.id],
   }),
 }));
+
+export const scamFlagsRelations = relations(scamFlags, ({ one }) => ({
+  group: one(signalGroups, {
+    fields: [scamFlags.groupId],
+    references: [signalGroups.id],
+  }),
+}));
+
+export const twitterMentionsRelations = relations(
+  twitterMentions,
+  ({ one }) => ({
+    group: one(signalGroups, {
+      fields: [twitterMentions.groupId],
+      references: [signalGroups.id],
+    }),
+  })
+);
+
+export const tradeRatingsRelations = relations(tradeRatings, ({ one }) => ({
+  group: one(signalGroups, {
+    fields: [tradeRatings.groupId],
+    references: [signalGroups.id],
+  }),
+  user: one(users, {
+    fields: [tradeRatings.userId],
+    references: [users.id],
+  }),
+}));
+
+export const groupEnrichmentRelations = relations(
+  groupEnrichment,
+  ({ one }) => ({
+    group: one(signalGroups, {
+      fields: [groupEnrichment.groupId],
+      references: [signalGroups.id],
+    }),
+  })
+);
