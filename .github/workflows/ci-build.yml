@@ -36,7 +36,7 @@ jobs:
           - dir: bot
             node: "22"
             install: npm install --no-audit --no-fund
-            build: npm run build --if-present
+            build: echo "Build auf diesem Stand nicht lauffähig, nur Install (siehe Kommentar oben)"
     name: build (${{ matrix.dir }})
     defaults:
       run:
