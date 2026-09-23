@@ -50,3 +50,7 @@ jobs:
         run: ${{ matrix.install }}
       - name: Build
         run: ${{ matrix.build }}
+      # Schema-Waechter: faengt Updates ab, die zwar bauen, aber Datenbank- oder
+      # Auth-Schema veraendern (Beispiel better-auth 1.7 mit neuer Spalte).
+      - name: Drizzle-Schema pruefen
+        run: npx drizzle-kit check
