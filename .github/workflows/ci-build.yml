@@ -53,4 +53,9 @@ jobs:
       # Schema-Waechter: faengt Updates ab, die zwar bauen, aber Datenbank- oder
       # Auth-Schema veraendern (Beispiel better-auth 1.7 mit neuer Spalte).
       - name: Drizzle-Schema pruefen
-        run: npx drizzle-kit check
+        run: |
+          if ls drizzle.config.* >/dev/null 2>&1; then
+            npx drizzle-kit check
+          else
+            echo "keine Drizzle-Konfig in diesem Ordner, uebersprungen"
+          fi
