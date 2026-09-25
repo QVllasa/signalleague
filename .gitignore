@@ -46,7 +46,6 @@ next-env.d.ts
 # docker volumes
 docker/data/
 
-# drizzle
-drizzle/meta/
+# drizzle (drizzle/meta/ wird versioniert: ohne _journal.json laufen keine Migrationen)
 bot/node_modules/
 bot/package-lock.json
