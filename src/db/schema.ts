@@ -146,7 +146,9 @@ export const enrichmentSourceEnum = pgEnum("enrichment_source", [
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: varchar("name", { length: 255 }),
-  email: varchar("email", { length: 255 }).notNull().unique(),
+  // nullable wie im Auth.js-Adapter-Schema: X/Twitter liefert ohne
+  // "Request email address"-Freigabe keine E-Mail (profile.email = null).
+  email: varchar("email", { length: 255 }).unique(),
   emailVerified: timestamp("email_verified", { mode: "date" }),
   image: text("image"),
   bio: text("bio"),

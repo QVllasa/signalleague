@@ -57,8 +57,8 @@ async function testClassification() {
     },
   ];
 
-  for (const test of testTweets) {
-    const result = classifyTweet(test.text);
+  for (const [i, test] of testTweets.entries()) {
+    const result = classifyTweet({ id: `test-${i}`, text: test.text });
     const pass = result.type === test.expected;
     console.log(`${pass ? "✅" : "❌"} "${test.text.slice(0, 60)}..." → ${result.type} (expected: ${test.expected})`);
   }

@@ -1,8 +1,6 @@
-# HINWEIS: Für mindestens ein Verzeichnis ist der Build auf dem aktuellen Stand des
-# Repos nicht lauffähig (Fehler im Code, nicht in CI). Dort läuft nur der Install.
-# Sobald der Build repariert ist, in diesem Workflow den Build-Schritt wieder
-# auf "npm run build --if-present" stellen.
 # CI-Build: läuft bei jedem Pull Request (Install + Build).
+# Der Next-Build braucht keine ENV (alle DB-Seiten sind dynamisch); Redis-
+# Verbindungsfehler im Build-Log sind erwartbar und nicht fatal.
 # Für Dependabot-PRs wird dieser Workflow nicht eigenständig ausgeführt, sondern
 # vom Workflow dependabot-auto-merge.yml per workflow_call eingebunden (needs-Gate),
 # damit der Auto-Merge erst nach grünem Build greift und der Build nur einmal läuft.
@@ -32,11 +30,11 @@ jobs:
           - dir: .
             node: "20"
             install: npm ci
-            build: echo "Build auf diesem Stand nicht lauffähig, nur Install (siehe Kommentar oben)"
+            build: npm run build --if-present
           - dir: bot
             node: "22"
             install: npm install --no-audit --no-fund
-            build: echo "Build auf diesem Stand nicht lauffähig, nur Install (siehe Kommentar oben)"
+            build: npm run build --if-present
     name: build (${{ matrix.dir }})
     defaults:
       run:
