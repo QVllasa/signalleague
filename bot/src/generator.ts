@@ -87,10 +87,14 @@ export class ContentGenerator {
     maxRetries = 2,
   ): Promise<string | null> {
     // First attempt — standard generation
-    let result = await this.generate(postType, context);
+    const first = await this.generate(postType, context);
 
-    if (result === null) return null;
-    if (result.length <= MAX_TWEET_LENGTH) return result;
+    if (first === null) return null;
+    if (first.length <= MAX_TWEET_LENGTH) return first;
+
+    // Bisher bester (noch zu langer) Versuch; als string typisiert, damit die
+    // Null-Eingrenzung in der Schleife erhalten bleibt (TS18047/TS7022).
+    let result: string = first;
 
     // Retry loop — ask model to shorten
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -117,10 +121,10 @@ export class ContentGenerator {
           ],
         });
 
-        const raw = completion.choices[0]?.message?.content;
+        const raw: string | null | undefined = completion.choices[0]?.message?.content;
         if (!raw) continue;
 
-        let tweet = raw.trim().replace(/^["']|["']$/g, "");
+        const tweet: string = raw.trim().replace(/^["']|["']$/g, "");
 
         if (tweet.length <= MAX_TWEET_LENGTH) {
           return tweet;
