@@ -8,15 +8,13 @@ import {
   reports,
   users,
   waitlist,
-  tradeRatings,
-  twitterMentions,
-  scamFlags,
 } from "@/db/schema";
-import { eq, and, or, ilike, ne, sql } from "drizzle-orm";
+import { eq, and, or, ilike, ne } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { syncGroupToSearch, removeGroupFromSearch } from "@/lib/sync-search";
 import { calculateGroupTier } from "@/lib/ranking";
+import { mergeGroupRecords } from "@/lib/merge-group";
 
 const idSchema = z.string().uuid("Invalid ID");
 const roleSchema = z.enum(["user", "moderator", "admin"]);
@@ -270,52 +268,8 @@ export async function mergeGroup(sourceId: string, targetId: string) {
   const tgtId = idSchema.parse(targetId);
 
   try {
-    // Move all reviews from source group to target group
-    await db
-      .update(reviews)
-      .set({ groupId: tgtId, updatedAt: new Date() })
-      .where(eq(reviews.groupId, srcId));
-
-    // Move all tradeRatings from source to target
-    await db
-      .update(tradeRatings)
-      .set({ groupId: tgtId })
-      .where(eq(tradeRatings.groupId, srcId));
-
-    // Move all twitterMentions from source to target
-    await db
-      .update(twitterMentions)
-      .set({ groupId: tgtId })
-      .where(eq(twitterMentions.groupId, srcId));
-
-    // Move all scamFlags from source to target
-    await db
-      .update(scamFlags)
-      .set({ groupId: tgtId })
-      .where(eq(scamFlags.groupId, srcId));
-
-    // Delete the source group
-    await db.delete(signalGroups).where(eq(signalGroups.id, srcId));
-
-    // Recalculate target group's avg_score and review_count
-    const [stats] = await db
-      .select({
-        avgScore: sql<string>`COALESCE(AVG(overall_rating::numeric), 0)::numeric(3,1)`,
-        reviewCount: sql<number>`COUNT(*)::int`,
-      })
-      .from(reviews)
-      .where(
-        and(eq(reviews.groupId, tgtId), eq(reviews.status, "published"))
-      );
-
-    await db
-      .update(signalGroups)
-      .set({
-        avgScore: stats.avgScore,
-        reviewCount: stats.reviewCount,
-        updatedAt: new Date(),
-      })
-      .where(eq(signalGroups.id, tgtId));
+    // Verschieben + Löschen + Statistik atomar in einer Transaktion
+    await mergeGroupRecords(srcId, tgtId);
 
     // Recalculate tier for target group
     await calculateGroupTier(tgtId);
