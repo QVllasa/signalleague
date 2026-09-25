@@ -26,7 +26,11 @@ function SkipButton({ id }: { id: string }) {
 
   return (
     <button
-      onClick={() => startTransition(() => skipQueuedPost(id))}
+      onClick={() =>
+        startTransition(async () => {
+          await skipQueuedPost(id);
+        })
+      }
       disabled={isPending}
       className="px-2 py-1 text-[10px] font-heading tracking-wider border border-border text-muted-foreground hover:border-destructive hover:text-destructive transition-colors disabled:opacity-50"
     >
@@ -41,9 +45,9 @@ function KillSwitch({ enabled }: { enabled: boolean }) {
   return (
     <button
       onClick={() =>
-        startTransition(() =>
-          updateBotConfig("bot_enabled", enabled ? "false" : "true")
-        )
+        startTransition(async () => {
+          await updateBotConfig("bot_enabled", enabled ? "false" : "true");
+        })
       }
       disabled={isPending}
       className={`relative inline-flex h-6 w-11 items-center transition-colors duration-200 border ${
